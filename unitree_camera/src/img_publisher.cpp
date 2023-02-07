@@ -1,4 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
+#include "UnitreeCameraSDK.hpp"
 
 using namespace std::chrono_literals;
 
@@ -28,9 +29,11 @@ private:
   double rate_, interval_;
   std::chrono::milliseconds interval_ms_;
 
+  UnitreeCamera test;
+
   void timer_callback()
   {
-    
+
   }
 
 };

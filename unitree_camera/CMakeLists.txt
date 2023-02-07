@@ -10,8 +10,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(UnitreeCameraSDK REQUIRED)
 
 add_executable(img_publisher src/img_publisher.cpp)
+target_link_libraries(img_publisher UnitreeCameraSDK::UnitreeCameraSDK)
 ament_target_dependencies(img_publisher
   rclcpp
 )

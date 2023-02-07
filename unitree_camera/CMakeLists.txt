@@ -11,6 +11,15 @@ find_package(rclcpp REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 
+add_executable(img_publisher src/img_publisher.cpp)
+ament_target_dependencies(img_publisher
+  rclcpp
+)
+
+install(TARGETS
+  img_publisher
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

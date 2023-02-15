@@ -1,6 +1,10 @@
 #include <memory>
+#include <string>
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/header.hpp"
+#include "sensor_msgs/msg/image.hpp"
 #include "UnitreeCameraSDK.hpp"
+#include "cv_bridge/cv_bridge.h"
 
 using namespace std::chrono_literals;
 
@@ -35,6 +39,11 @@ public:
 
     frame_size_ = cv::Size {frame_width_, frame_height_};
 
+    //Publishers
+    //TODO - make all things optional based on parameters
+    pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
+    pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_raw", 10);
+
     //Initialize camera
     cam_ = std::make_unique<UnitreeCamera>(device_node_);
 
@@ -61,11 +70,14 @@ public:
   }
 private:
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_left_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_right_;
 
   double interval_;
   std::chrono::milliseconds interval_ms_;
   int fps_, device_node_, frame_width_, frame_height_;
   cv::Size frame_size_ {1856, 800};
+  const std::string encoding_ = "bgr8"; //TODO allow to change?
 
   std::unique_ptr<UnitreeCamera> cam_;
 
@@ -74,6 +86,9 @@ private:
     if (!cam_->isOpened()) {
       //TODO - exit if camera is no longer open
     }
+
+    std_msgs::msg::Header header;
+    header.stamp = get_clock()->now();
 
     std::chrono::microseconds t;
 
@@ -84,11 +99,15 @@ private:
       
       //Get left and right images from returned frame
       raw_frame(
-        cv::Rect(0, 0, raw_frame.size().width/2, raw_frame.size().height)
-      ).copyTo(raw_right);
-      raw_frame(
         cv::Rect(raw_frame.size().width/2,0, raw_frame.size().width/2, raw_frame.size().height)
       ).copyTo(raw_left);
+      raw_frame(
+        cv::Rect(0, 0, raw_frame.size().width/2, raw_frame.size().height)
+      ).copyTo(raw_right);
+
+      //Publish frames
+      pub_raw_left_->publish(*(cv_bridge::CvImage(header, encoding_, raw_left).toImageMsg()));
+      pub_raw_right_->publish(*(cv_bridge::CvImage(header, encoding_, raw_right).toImageMsg()));
     }
 
   }

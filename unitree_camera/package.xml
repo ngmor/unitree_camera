@@ -8,6 +8,8 @@
   <license>Apache License 2.0</license>
 
   <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>OpenCV</depend>
   <depend>cv_bridge</depend>
   <depend>UnitreeCameraSDK</depend>

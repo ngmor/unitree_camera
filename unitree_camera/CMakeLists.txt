@@ -13,15 +13,23 @@ find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(UnitreeCameraSDK REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable(img_publisher src/img_publisher.cpp)
 target_link_libraries(img_publisher UnitreeCameraSDK::UnitreeCameraSDK)
 ament_target_dependencies(img_publisher
   rclcpp std_msgs sensor_msgs cv_bridge
 )
+add_executable(img_subscriber src/img_subscriber.cpp)
+
+ament_target_dependencies(img_subscriber
+  rclcpp std_msgs sensor_msgs cv_bridge
+)
+target_link_libraries(img_subscriber ${OpenCV_LIBRARIES})
 
 install(TARGETS
   img_publisher
+  img_subscriber
   DESTINATION lib/${PROJECT_NAME}
 )
 

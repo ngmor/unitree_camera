@@ -11,6 +11,7 @@ const std::string RAW_LEFT_WINDOW = "Raw Left Image";
 const std::string RAW_RIGHT_WINDOW = "Raw Right Image";
 const std::string RECT_LEFT_WINDOW = "Rectified Left Image";
 const std::string RECT_RIGHT_WINDOW = "Rectified Right Image";
+const std::string DEPTH_WINDOW = "Depth";
 
 class ImgSubscriber : public rclcpp::Node
 {
@@ -39,11 +40,17 @@ public:
       10,
       std::bind(&ImgSubscriber::rect_right_callback, this, std::placeholders::_1)
     );
+    sub_depth_ = create_subscription<sensor_msgs::msg::Image>(
+      "image_depth",
+      10,
+      std::bind(&ImgSubscriber::depth_callback, this, std::placeholders::_1)
+    );
 
     cv::namedWindow(RAW_LEFT_WINDOW);
     cv::namedWindow(RAW_RIGHT_WINDOW);
     cv::namedWindow(RECT_LEFT_WINDOW);
     cv::namedWindow(RECT_RIGHT_WINDOW);
+    cv::namedWindow(DEPTH_WINDOW);
 
     RCLCPP_INFO_STREAM(get_logger(), "img_subscriber node started");
 
@@ -54,11 +61,13 @@ public:
   {
     cv::destroyAllWindows();
   }
+
 private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_left_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_right_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_left_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_right_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 
   void raw_left_callback(const sensor_msgs::msg::Image & msg) {
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
@@ -81,6 +90,12 @@ private:
   void rect_right_callback(const sensor_msgs::msg::Image & msg) {
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
     cv::imshow(RECT_RIGHT_WINDOW, cv_ptr->image);
+    cv::waitKey(1);
+  }
+
+  void depth_callback(const sensor_msgs::msg::Image & msg) {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
+    cv::imshow(DEPTH_WINDOW, cv_ptr->image);
     cv::waitKey(1);
   }
 

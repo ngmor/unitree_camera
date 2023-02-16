@@ -42,6 +42,10 @@ public:
     declare_parameter("enable_rect", true, param);
     enable_rect_ = get_parameter("enable_rect").get_parameter_value().get<bool>();
 
+    param.description = "Enable publishing of depth frames.";
+    declare_parameter("enable_depth", false, param);
+    enable_depth_ = get_parameter("enable_depth").get_parameter_value().get<bool>();
+
     //Timers
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
 
@@ -49,6 +53,7 @@ public:
 
     //Initialize camera
     //TODO - need to initialize with config yaml?
+    //Doesn't seem to be necessary for rectification
     cam_ = std::make_unique<UnitreeCamera>(device_node_);
 
     if (!cam_->isOpened()) {
@@ -71,6 +76,12 @@ public:
       pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
     }
 
+    if (enable_depth_) {
+      cam_->startStereoCompute();
+
+      pub_depth_ = create_publisher<sensor_msgs::msg::Image>("image_depth", 10);
+    }
+
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
 
     //Start camera capturing
@@ -82,6 +93,9 @@ public:
   //Stop capture when node is destroyed
   ~ImgPublisher()
   {
+    if (enable_depth_) {
+      cam_->stopStereoCompute();
+    }
     cam_->stopCapture();
   }
 private:
@@ -90,13 +104,15 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_right_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_left_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_right_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
 
   double interval_;
   std::chrono::milliseconds interval_ms_;
   int fps_, device_node_;
-  bool enable_raw_, enable_rect_;
+  bool enable_raw_, enable_rect_, enable_depth_;
   cv::Size frame_size_ {1856, 800};
-  const std::string encoding_ = "bgr8"; //TODO allow to change?
+  const std::string color_encoding_ = "bgr8"; //TODO allow to change?
+  const std::string depth_encoding_ = "8UC3";
 
   std::unique_ptr<UnitreeCamera> cam_;
 
@@ -109,11 +125,10 @@ private:
     std_msgs::msg::Header header;
     header.stamp = get_clock()->now();
 
+    std::chrono::microseconds t;
     
     //Get and publish raw frames
     if (enable_raw_) {
-      std::chrono::microseconds t;
-
       cv::Mat raw_frame;
 
       //Process/publish raw frame if it can be obtained
@@ -129,8 +144,8 @@ private:
         ).copyTo(raw_right);
 
         //Publish frames
-        pub_raw_left_->publish(*(cv_bridge::CvImage(header, encoding_, raw_left).toImageMsg()));
-        pub_raw_right_->publish(*(cv_bridge::CvImage(header, encoding_, raw_right).toImageMsg()));
+        pub_raw_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_left).toImageMsg()));
+        pub_raw_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_right).toImageMsg()));
       }
     }
 
@@ -144,8 +159,20 @@ private:
         cv::flip(rect_right, rect_right, -1);
 
         //Publish frames
-        pub_rect_left_->publish(*(cv_bridge::CvImage(header, encoding_, rect_left).toImageMsg()));
-        pub_rect_right_->publish(*(cv_bridge::CvImage(header, encoding_, rect_right).toImageMsg()));
+        pub_rect_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_left).toImageMsg()));
+        pub_rect_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_right).toImageMsg()));
+      }
+    }
+
+    //Get and publish depth frames
+    if(enable_depth_) {
+      cv::Mat depth;
+
+      if(cam_->getDepthFrame(depth, true, t)) {
+        if(!depth.empty()) {
+          //Publish frames
+          pub_depth_->publish(*(cv_bridge::CvImage(header, depth_encoding_, depth).toImageMsg()));
+        }
       }
     }
 

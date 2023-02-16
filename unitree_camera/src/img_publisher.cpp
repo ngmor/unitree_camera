@@ -13,7 +13,8 @@ using namespace std::chrono_literals;
 
 std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
   const std::vector<PCLType> & pcl,
-  const std_msgs::msg::Header & header
+  const std_msgs::msg::Header & header,
+  const std::string_view frame_id
 );
 
 class ImgPublisher : public rclcpp::Node
@@ -32,7 +33,7 @@ public:
 
     param.description = "Camera device node number.";
     declare_parameter("device_node", 0, param);
-    device_node_ = get_parameter("device_node").get_parameter_value().get<int>();
+    int device_node = get_parameter("device_node").get_parameter_value().get<int>();
 
     param.description = "Camera frame width.";
     declare_parameter("frame_width", 1856, param);
@@ -41,6 +42,15 @@ public:
     param.description = "Camera frame height.";
     declare_parameter("frame_height", 800, param);
     int frame_height = get_parameter("frame_height").get_parameter_value().get<int>();
+
+    param.description = "Configure camera with YAML file instead of parameters. "
+                        "MUST be true if using point cloud.";
+    declare_parameter("use_yaml", false, param);
+    auto use_yaml = get_parameter("use_yaml").get_parameter_value().get<bool>();
+
+    param.description = "Path to yaml configuration file.";
+    declare_parameter("yaml_path", "", param);
+    auto yaml_path = get_parameter("yaml_path").get_parameter_value().get<std::string>();
 
     param.description = "Enable publishing of raw frames.";
     declare_parameter("enable_raw", false, param);
@@ -58,23 +68,42 @@ public:
     declare_parameter("enable_point_cloud", false, param);
     enable_point_cloud_ = get_parameter("enable_point_cloud").get_parameter_value().get<bool>();
 
+    param.description = "Frame ID for point cloud messages.";
+    declare_parameter("point_cloud_frame", "map", param);
+    point_cloud_frame_ = get_parameter("point_cloud_frame").get_parameter_value().get<std::string>();
+
+    if (enable_point_cloud_ && (!use_yaml)) {
+      RCLCPP_ERROR_STREAM(get_logger(), "Cannot activate point cloud without using yaml "
+                                        "file for configuration.");
+      //TODO throw error and exit
+    }
+
+    if (use_yaml && (yaml_path == "")) {
+      RCLCPP_ERROR_STREAM(get_logger(), "Must specify yaml configuration file path to use one.");
+      //TODO throw error and exit
+    }
+
     //Timers
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
 
     frame_size_ = cv::Size {frame_width, frame_height};
 
     //Initialize camera
-    //TODO - need to initialize with config yaml?
-    //Doesn't seem to be necessary for rectification
-    cam_ = std::make_unique<UnitreeCamera>("stereo_camera_config.yaml");
+    if (!use_yaml) {
+      cam_ = std::make_unique<UnitreeCamera>(device_node);
+    } else {
+      cam_ = std::make_unique<UnitreeCamera>(yaml_path);
+    }
 
     if (!cam_->isOpened()) {
-      //TODO - exit if camera fails to open
+      //TODO throw error and exit if camera fails to open
     }
 
     //Set frame size and fps
-    cam_->setRawFrameSize(frame_size_);
-    cam_->setRawFrameRate(fps_);
+    if (!use_yaml) {
+      cam_->setRawFrameSize(frame_size_);
+      cam_->setRawFrameRate(fps_);
+    }
 
     if (enable_raw_) {
       pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
@@ -82,7 +111,9 @@ public:
     }
 
     if (enable_rect_) {
-      cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
+      if (!use_yaml) {
+        cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
+      }
 
       pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_rect", 10);
       pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
@@ -121,8 +152,9 @@ private:
 
   double interval_;
   std::chrono::milliseconds interval_ms_;
-  int fps_, device_node_;
+  int fps_;
   bool enable_raw_, enable_rect_, enable_depth_, enable_point_cloud_;
+  std::string point_cloud_frame_;
   cv::Size frame_size_ {1856, 800};
   const std::string color_encoding_ = "bgr8"; //TODO allow to change?
   const std::string depth_encoding_ = "8UC3";
@@ -132,7 +164,7 @@ private:
   void timer_callback()
   {
     if (!cam_->isOpened()) {
-      //TODO - exit if camera is no longer open
+      //TODO throw error and exit if camera is no longer open
     }
 
     std_msgs::msg::Header header;
@@ -191,17 +223,13 @@ private:
 
     //Get and publish point cloud data
     if (enable_point_cloud_) {
-      RCLCPP_INFO_STREAM(get_logger(), "Before vector");
       std::vector<PCLType> point_cloud;
 
-      RCLCPP_INFO_STREAM(get_logger(), "After vector");
       if(cam_->getPointCloud(point_cloud, t)) {
-        RCLCPP_INFO_STREAM(get_logger(), "Inside IF");
-        // //Convert to PointCloud2 message and publish
-        auto msg = unitree_pcl_to_ros_msg(point_cloud, header);
+        //Convert to PointCloud2 message and publish
+        auto msg = unitree_pcl_to_ros_msg(point_cloud, header, point_cloud_frame_);
         pub_point_cloud_->publish(*msg);
       }
-      RCLCPP_INFO_STREAM(get_logger(), "After IF");
     }
 
   }
@@ -211,7 +239,8 @@ private:
 //Convert Unitree PCL to ros message
 std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
   const std::vector<PCLType> & pcl,
-  const std_msgs::msg::Header & header
+  const std_msgs::msg::Header & header,
+  const std::string_view frame_id
 )
 {
   //This function is loosely based on this answers.ros.org post
@@ -221,10 +250,13 @@ std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
   for (const auto & point : pcl) {
     //Construct a PCL XYZRGB point out of the point provided by the Unitree PCLType
     //and append to points list in point cloud
+    //x axis is aligned with the direction of the camera
+    //y axis is pointing towards the left of the camera
+    //z axis is pointing up from the camera's perspective
     cloud.points.push_back(pcl::PointXYZRGB {
-      -point.pts(0),  //x
-      -point.pts(1),  //y
-      point.pts(2),   //z
+      point.pts(2),   //x
+      point.pts(0),   //y
+      point.pts(1),   //z
       point.clr(2),   //r
       point.clr(1),   //g
       point.clr(0)    //b
@@ -234,7 +266,7 @@ std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
   auto msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(cloud, *msg);
   msg->header = header;
-  msg->header.frame_id = "map";
+  msg->header.frame_id = frame_id;
 
   return msg;
 }

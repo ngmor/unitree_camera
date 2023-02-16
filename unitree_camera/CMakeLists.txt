@@ -14,7 +14,7 @@ find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(UnitreeCameraSDK REQUIRED)
 find_package(PCL 1.12 REQUIRED QUIET) # bad solution
-                                 # https://github.com/PointCloudLibrary/pcl/issues/2651
+                                      # https://github.com/PointCloudLibrary/pcl/issues/2651
 find_package(pcl_conversions REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(SYSTEM 
@@ -40,6 +40,11 @@ install(TARGETS
   img_publisher
   img_subscriber
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 if(BUILD_TESTING)

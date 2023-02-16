@@ -139,6 +139,10 @@ private:
       cv::Mat rect_left, rect_right;
 
       if(cam_->getRectStereoFrame(rect_left, rect_right)) {
+        //flip frames
+        cv::flip(rect_left, rect_left, -1);
+        cv::flip(rect_right, rect_right, -1);
+
         //Publish frames
         pub_rect_left_->publish(*(cv_bridge::CvImage(header, encoding_, rect_left).toImageMsg()));
         pub_rect_right_->publish(*(cv_bridge::CvImage(header, encoding_, rect_right).toImageMsg()));

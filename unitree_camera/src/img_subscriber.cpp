@@ -9,6 +9,8 @@
 
 const std::string RAW_LEFT_WINDOW = "Raw Left Image";
 const std::string RAW_RIGHT_WINDOW = "Raw Right Image";
+const std::string RECT_LEFT_WINDOW = "Rectified Left Image";
+const std::string RECT_RIGHT_WINDOW = "Rectified Right Image";
 
 class ImgSubscriber : public rclcpp::Node
 {
@@ -27,9 +29,21 @@ public:
       10,
       std::bind(&ImgSubscriber::raw_right_callback, this, std::placeholders::_1)
     );
+    sub_rect_left_ = create_subscription<sensor_msgs::msg::Image>(
+      "left/image_rect",
+      10,
+      std::bind(&ImgSubscriber::rect_left_callback, this, std::placeholders::_1)
+    );
+    sub_rect_right_ = create_subscription<sensor_msgs::msg::Image>(
+      "right/image_rect",
+      10,
+      std::bind(&ImgSubscriber::rect_right_callback, this, std::placeholders::_1)
+    );
 
     cv::namedWindow(RAW_LEFT_WINDOW);
     cv::namedWindow(RAW_RIGHT_WINDOW);
+    cv::namedWindow(RECT_LEFT_WINDOW);
+    cv::namedWindow(RECT_RIGHT_WINDOW);
 
     RCLCPP_INFO_STREAM(get_logger(), "img_subscriber node started");
 
@@ -43,6 +57,8 @@ public:
 private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_left_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_right_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_left_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_right_;
 
   void raw_left_callback(const sensor_msgs::msg::Image & msg) {
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
@@ -53,6 +69,18 @@ private:
   void raw_right_callback(const sensor_msgs::msg::Image & msg) {
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
     cv::imshow(RAW_RIGHT_WINDOW, cv_ptr->image);
+    cv::waitKey(1);
+  }
+
+  void rect_left_callback(const sensor_msgs::msg::Image & msg) {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
+    cv::imshow(RECT_LEFT_WINDOW, cv_ptr->image);
+    cv::waitKey(1);
+  }
+
+  void rect_right_callback(const sensor_msgs::msg::Image & msg) {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
+    cv::imshow(RECT_RIGHT_WINDOW, cv_ptr->image);
     cv::waitKey(1);
   }
 

@@ -13,12 +13,20 @@ find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(UnitreeCameraSDK REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
+find_package(PCL REQUIRED QUIET) # bad solution
+                                 # https://github.com/PointCloudLibrary/pcl/issues/2651
+find_package(pcl_conversions REQUIRED)
+include_directories(SYSTEM 
+  ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+)
+link_directories(${PCL_INCLUDE_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 add_executable(img_publisher src/img_publisher.cpp)
 target_link_libraries(img_publisher UnitreeCameraSDK::UnitreeCameraSDK)
 ament_target_dependencies(img_publisher
-  rclcpp std_msgs sensor_msgs cv_bridge
+  rclcpp std_msgs sensor_msgs cv_bridge pcl_conversions
 )
 add_executable(img_subscriber src/img_subscriber.cpp)
 

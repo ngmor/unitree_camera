@@ -3,10 +3,17 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "UnitreeCameraSDK.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "pcl_conversions/pcl_conversions.h"
 
 using namespace std::chrono_literals;
+
+std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
+  const std::vector<PCLType> & pcl,
+  const std_msgs::msg::Header & header
+);
 
 class ImgPublisher : public rclcpp::Node
 {
@@ -46,6 +53,10 @@ public:
     declare_parameter("enable_depth", false, param);
     enable_depth_ = get_parameter("enable_depth").get_parameter_value().get<bool>();
 
+    param.description = "Enable publishing point cloud data.";
+    declare_parameter("enable_point_cloud", false, param);
+    enable_point_cloud_ = get_parameter("enable_point_cloud").get_parameter_value().get<bool>();
+
     //Timers
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
 
@@ -76,10 +87,13 @@ public:
       pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
     }
 
-    if (enable_depth_) {
-      cam_->startStereoCompute();
+    if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
 
+    if (enable_depth_) {
       pub_depth_ = create_publisher<sensor_msgs::msg::Image>("image_depth", 10);
+    }
+    if (enable_point_cloud_) {
+      pub_point_cloud_ = create_publisher<sensor_msgs::msg::PointCloud2>("point_cloud", 10);
     }
 
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
@@ -93,9 +107,7 @@ public:
   //Stop capture when node is destroyed
   ~ImgPublisher()
   {
-    if (enable_depth_) {
-      cam_->stopStereoCompute();
-    }
+    if (enable_depth_ || enable_point_cloud_) {cam_->stopStereoCompute();}
     cam_->stopCapture();
   }
 private:
@@ -105,11 +117,12 @@ private:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_left_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_right_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_point_cloud_;
 
   double interval_;
   std::chrono::milliseconds interval_ms_;
   int fps_, device_node_;
-  bool enable_raw_, enable_rect_, enable_depth_;
+  bool enable_raw_, enable_rect_, enable_depth_, enable_point_cloud_;
   cv::Size frame_size_ {1856, 800};
   const std::string color_encoding_ = "bgr8"; //TODO allow to change?
   const std::string depth_encoding_ = "8UC3";
@@ -176,9 +189,49 @@ private:
       }
     }
 
+    //Get and publish point cloud data
+    if (enable_point_cloud_) {
+      std::vector<PCLType> point_cloud;
+      if(cam_->getPointCloud(point_cloud, t)) {
+        //Convert to PointCloud2 message and publish
+        auto msg = unitree_pcl_to_ros_msg(point_cloud, header);
+        pub_point_cloud_->publish(*msg);
+      }
+    }
+
   }
 
 };
+
+//Convert Unitree PCL to ros message
+std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
+  const std::vector<PCLType> & pcl,
+  const std_msgs::msg::Header & header
+)
+{
+  //This function is loosely based on this answers.ros.org post
+  //https://answers.ros.org/question/312587/generate-and-publish-pointcloud2-in-ros2/
+  pcl::PointCloud<pcl::PointXYZRGB> cloud;
+
+  for (const auto & point : pcl) {
+    //Construct a PCL XYZRGB point out of the point provided by the Unitree PCLType
+    //and append to points list in point cloud
+    cloud.points.push_back(pcl::PointXYZRGB {
+      -point.pts(0),  //x
+      -point.pts(1),  //y
+      point.pts(2),   //z
+      point.clr(2),   //r
+      point.clr(1),   //g
+      point.clr(0)    //b
+    });
+  }
+
+  auto msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
+  pcl::toROSMsg(cloud, *msg);
+  msg->header = header;
+
+  return msg;
+}
 
 int main(int argc, char** argv)
 {

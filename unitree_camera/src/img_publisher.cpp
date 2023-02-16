@@ -28,23 +28,24 @@ public:
 
     param.description = "Camera frame width.";
     declare_parameter("frame_width", 1856, param);
-    frame_width_ = get_parameter("frame_width").get_parameter_value().get<int>();
+    int frame_width = get_parameter("frame_width").get_parameter_value().get<int>();
 
     param.description = "Camera frame height.";
     declare_parameter("frame_height", 800, param);
-    frame_height_ = get_parameter("frame_height").get_parameter_value().get<int>();
+    int frame_height = get_parameter("frame_height").get_parameter_value().get<int>();
 
     param.description = "Enable publishing of raw frames.";
     declare_parameter("enable_raw", false, param);
     enable_raw_ = get_parameter("enable_raw").get_parameter_value().get<bool>();
 
+    param.description = "Enable publishing of rectified frames.";
+    declare_parameter("enable_rect", true, param);
+    enable_rect_ = get_parameter("enable_rect").get_parameter_value().get<bool>();
 
     //Timers
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
 
-    frame_size_ = cv::Size {frame_width_, frame_height_};
-
-    //Publishers
+    frame_size_ = cv::Size {frame_width, frame_height};
 
     //Initialize camera
     //TODO - need to initialize with config yaml?
@@ -54,12 +55,20 @@ public:
       //TODO - exit if camera fails to open
     }
 
+    //Set frame size and fps
+    cam_->setRawFrameSize(frame_size_);
+    cam_->setRawFrameRate(fps_);
+
     if (enable_raw_) {
-      cam_->setRawFrameSize(frame_size_);
-      cam_->setRawFrameRate(fps_);
-      
       pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
       pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_raw", 10);
+    }
+
+    if (enable_rect_) {
+      cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
+
+      pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_rect", 10);
+      pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
     }
 
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
@@ -79,10 +88,12 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_left_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_right_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_left_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_right_;
 
   double interval_;
   std::chrono::milliseconds interval_ms_;
-  int fps_, device_node_, frame_width_, frame_height_;
+  int fps_, device_node_;
   bool enable_raw_, enable_rect_;
   cv::Size frame_size_ {1856, 800};
   const std::string encoding_ = "bgr8"; //TODO allow to change?
@@ -98,9 +109,11 @@ private:
     std_msgs::msg::Header header;
     header.stamp = get_clock()->now();
 
-    std::chrono::microseconds t;
-
+    
+    //Get and publish raw frames
     if (enable_raw_) {
+      std::chrono::microseconds t;
+
       cv::Mat raw_frame;
 
       //Process/publish raw frame if it can be obtained
@@ -118,6 +131,17 @@ private:
         //Publish frames
         pub_raw_left_->publish(*(cv_bridge::CvImage(header, encoding_, raw_left).toImageMsg()));
         pub_raw_right_->publish(*(cv_bridge::CvImage(header, encoding_, raw_right).toImageMsg()));
+      }
+    }
+
+    //Get and publish rectified frames
+    if (enable_rect_) {
+      cv::Mat rect_left, rect_right;
+
+      if(cam_->getRectStereoFrame(rect_left, rect_right)) {
+        //Publish frames
+        pub_rect_left_->publish(*(cv_bridge::CvImage(header, encoding_, rect_left).toImageMsg()));
+        pub_rect_right_->publish(*(cv_bridge::CvImage(header, encoding_, rect_right).toImageMsg()));
       }
     }
 

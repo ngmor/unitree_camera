@@ -34,26 +34,33 @@ public:
     declare_parameter("frame_height", 800, param);
     frame_height_ = get_parameter("frame_height").get_parameter_value().get<int>();
 
+    param.description = "Enable publishing of raw frames.";
+    declare_parameter("enable_raw", false, param);
+    enable_raw_ = get_parameter("enable_raw").get_parameter_value().get<bool>();
+
+
     //Timers
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
 
     frame_size_ = cv::Size {frame_width_, frame_height_};
 
     //Publishers
-    //TODO - make all things optional based on parameters
-    pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
-    pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_raw", 10);
 
     //Initialize camera
+    //TODO - need to initialize with config yaml?
     cam_ = std::make_unique<UnitreeCamera>(device_node_);
 
     if (!cam_->isOpened()) {
       //TODO - exit if camera fails to open
     }
 
-    //TODO make all things optional based on parameters
-    cam_->setRawFrameSize(frame_size_);
-    cam_->setRawFrameRate(fps_);
+    if (enable_raw_) {
+      cam_->setRawFrameSize(frame_size_);
+      cam_->setRawFrameRate(fps_);
+      
+      pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
+      pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_raw", 10);
+    }
 
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
 
@@ -76,6 +83,7 @@ private:
   double interval_;
   std::chrono::milliseconds interval_ms_;
   int fps_, device_node_, frame_width_, frame_height_;
+  bool enable_raw_, enable_rect_;
   cv::Size frame_size_ {1856, 800};
   const std::string encoding_ = "bgr8"; //TODO allow to change?
 
@@ -92,22 +100,25 @@ private:
 
     std::chrono::microseconds t;
 
-    cv::Mat raw_frame;
-    //Process/publish raw frame if it can be obtained
-    if (cam_->getRawFrame(raw_frame, t)) {
-      cv::Mat raw_left, raw_right;
-      
-      //Get left and right images from returned frame
-      raw_frame(
-        cv::Rect(raw_frame.size().width/2,0, raw_frame.size().width/2, raw_frame.size().height)
-      ).copyTo(raw_left);
-      raw_frame(
-        cv::Rect(0, 0, raw_frame.size().width/2, raw_frame.size().height)
-      ).copyTo(raw_right);
+    if (enable_raw_) {
+      cv::Mat raw_frame;
 
-      //Publish frames
-      pub_raw_left_->publish(*(cv_bridge::CvImage(header, encoding_, raw_left).toImageMsg()));
-      pub_raw_right_->publish(*(cv_bridge::CvImage(header, encoding_, raw_right).toImageMsg()));
+      //Process/publish raw frame if it can be obtained
+      if (cam_->getRawFrame(raw_frame, t)) {
+        cv::Mat raw_left, raw_right;
+        
+        //Get left and right images from returned frame
+        raw_frame(
+          cv::Rect(raw_frame.size().width/2,0, raw_frame.size().width/2, raw_frame.size().height)
+        ).copyTo(raw_left);
+        raw_frame(
+          cv::Rect(0, 0, raw_frame.size().width/2, raw_frame.size().height)
+        ).copyTo(raw_right);
+
+        //Publish frames
+        pub_raw_left_->publish(*(cv_bridge::CvImage(header, encoding_, raw_left).toImageMsg()));
+        pub_raw_right_->publish(*(cv_bridge::CvImage(header, encoding_, raw_right).toImageMsg()));
+      }
     }
 
   }

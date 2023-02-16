@@ -1,5 +1,6 @@
 #include <memory>
 #include <string>
+#include <vector>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "sensor_msgs/msg/image.hpp"
@@ -65,7 +66,7 @@ public:
     //Initialize camera
     //TODO - need to initialize with config yaml?
     //Doesn't seem to be necessary for rectification
-    cam_ = std::make_unique<UnitreeCamera>(device_node_);
+    cam_ = std::make_unique<UnitreeCamera>("stereo_camera_config.yaml");
 
     if (!cam_->isOpened()) {
       //TODO - exit if camera fails to open
@@ -87,8 +88,6 @@ public:
       pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
     }
 
-    if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
-
     if (enable_depth_) {
       pub_depth_ = create_publisher<sensor_msgs::msg::Image>("image_depth", 10);
     }
@@ -100,6 +99,7 @@ public:
 
     //Start camera capturing
     cam_->startCapture();
+    if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
 
     RCLCPP_INFO_STREAM(get_logger(), "img_publisher node started");
   }
@@ -191,12 +191,17 @@ private:
 
     //Get and publish point cloud data
     if (enable_point_cloud_) {
+      RCLCPP_INFO_STREAM(get_logger(), "Before vector");
       std::vector<PCLType> point_cloud;
+
+      RCLCPP_INFO_STREAM(get_logger(), "After vector");
       if(cam_->getPointCloud(point_cloud, t)) {
-        //Convert to PointCloud2 message and publish
+        RCLCPP_INFO_STREAM(get_logger(), "Inside IF");
+        // //Convert to PointCloud2 message and publish
         auto msg = unitree_pcl_to_ros_msg(point_cloud, header);
         pub_point_cloud_->publish(*msg);
       }
+      RCLCPP_INFO_STREAM(get_logger(), "After IF");
     }
 
   }
@@ -229,6 +234,7 @@ std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
   auto msg = std::make_shared<sensor_msgs::msg::PointCloud2>();
   pcl::toROSMsg(cloud, *msg);
   msg->header = header;
+  msg->header.frame_id = "map";
 
   return msg;
 }

@@ -31,6 +31,8 @@ public:
     cv::namedWindow(RAW_LEFT_WINDOW);
     cv::namedWindow(RAW_RIGHT_WINDOW);
 
+    RCLCPP_INFO_STREAM(get_logger(), "img_subscriber node started");
+
   }
 
   //Destroy windows

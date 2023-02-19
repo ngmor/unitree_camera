@@ -1,5 +1,6 @@
 //This node is intended to be used for testing/example of subscribing
 // to images published by img_publisher.
+//TODO document
 #include <string>
 #include <string_view>
 #include "rclcpp/rclcpp.hpp"

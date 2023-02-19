@@ -1,6 +1,9 @@
+//TODO document
+
 #include <memory>
 #include <string>
 #include <vector>
+#include <exception>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "sensor_msgs/msg/image.hpp"
@@ -72,15 +75,20 @@ public:
     declare_parameter("point_cloud_frame", "map", param);
     point_cloud_frame_ = get_parameter("point_cloud_frame").get_parameter_value().get<std::string>();
 
+    //Throw exception if invalid inputs are provided
+    
     if (enable_point_cloud_ && (!use_yaml)) {
-      RCLCPP_ERROR_STREAM(get_logger(), "Cannot activate point cloud without using yaml "
-                                        "file for configuration.");
-      //TODO throw error and exit
+      std::string msg = "Cannot activate point cloud without using yaml file for configuration.";
+
+      RCLCPP_ERROR_STREAM(get_logger(), msg);
+      throw std::logic_error(msg);
     }
 
     if (use_yaml && (yaml_path == "")) {
-      RCLCPP_ERROR_STREAM(get_logger(), "Must specify yaml configuration file path to use one.");
-      //TODO throw error and exit
+      std::string msg = "Must specify yaml configuration file path to use one.";
+
+      RCLCPP_ERROR_STREAM(get_logger(), msg);
+      throw std::logic_error(msg);
     }
 
     //Timers
@@ -95,8 +103,12 @@ public:
       cam_ = std::make_unique<UnitreeCamera>(yaml_path);
     }
 
+    //Throw error and exit if camera fails to open
     if (!cam_->isOpened()) {
-      //TODO throw error and exit if camera fails to open
+      std::string msg = "Camera failed to open on startup.";
+
+      RCLCPP_ERROR_STREAM(get_logger(), msg);
+      throw std::logic_error(msg);
     }
 
     //Set frame size and fps
@@ -156,15 +168,19 @@ private:
   bool enable_raw_, enable_rect_, enable_depth_, enable_point_cloud_;
   std::string point_cloud_frame_;
   cv::Size frame_size_ {1856, 800};
-  const std::string color_encoding_ = "bgr8"; //TODO allow to change?
+  const std::string color_encoding_ = "bgr8";
   const std::string depth_encoding_ = "8UC3";
 
   std::unique_ptr<UnitreeCamera> cam_;
 
   void timer_callback()
   {
+    //Throw error and exit if camera is no longer open
     if (!cam_->isOpened()) {
-      //TODO throw error and exit if camera is no longer open
+      std::string msg = "Camera closed unexpectedly.";
+
+      RCLCPP_ERROR_STREAM(get_logger(), msg);
+      throw std::logic_error(msg);
     }
 
     std_msgs::msg::Header header;

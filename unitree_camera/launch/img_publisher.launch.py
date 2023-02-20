@@ -72,10 +72,10 @@ def generate_launch_description():
             value=TernaryTextSubstitution(
                 OrCondition([
                     LaunchConfigurationEquals('camera', 'head_bottom'),
-                    LaunchConfigurationEquals('camera', 'body_left'),
+                    LaunchConfigurationEquals('camera', 'body_right'),
                 ]),
-                "stereo_camera_config0.yaml", # head_bottom camera and body_left camera
-                "stereo_camera_config1.yaml", # head_front camera and body_right camera
+                "stereo_camera_config0.yaml", # head_bottom camera and body_right camera
+                "stereo_camera_config1.yaml", # head_front camera and body_left camera
             )
         ),
         Node(

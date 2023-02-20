@@ -92,11 +92,14 @@ public:
     }
 
     //Timers
+    /* TODO uncomment
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
+    */
 
     frame_size_ = cv::Size {frame_width, frame_height};
 
     //Initialize camera
+    /* TODO uncomment
     if (!use_yaml) {
       cam_ = std::make_unique<UnitreeCamera>(device_node);
     } else {
@@ -110,40 +113,45 @@ public:
       RCLCPP_ERROR_STREAM(get_logger(), msg);
       throw std::logic_error(msg);
     }
+    
 
     //Set frame size and fps
     if (!use_yaml) {
       cam_->setRawFrameSize(frame_size_);
       cam_->setRawFrameRate(fps_);
     }
+    */
 
     if (enable_raw_) {
-      pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_raw", 10);
-      pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_raw", 10);
+      pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_raw", 10);
+      pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("~/right/image_raw", 10);
     }
 
     if (enable_rect_) {
+      /* TODO uncomment
       if (!use_yaml) {
         cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
       }
+      */
 
-      pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("left/image_rect", 10);
-      pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("right/image_rect", 10);
+      pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_rect", 10);
+      pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("~/right/image_rect", 10);
     }
 
     if (enable_depth_) {
-      pub_depth_ = create_publisher<sensor_msgs::msg::Image>("image_depth", 10);
+      pub_depth_ = create_publisher<sensor_msgs::msg::Image>("~/image_depth", 10);
     }
     if (enable_point_cloud_) {
-      pub_point_cloud_ = create_publisher<sensor_msgs::msg::PointCloud2>("point_cloud", 10);
+      pub_point_cloud_ = create_publisher<sensor_msgs::msg::PointCloud2>("~/point_cloud", 10);
     }
 
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
 
     //Start camera capturing
+    /* TODO uncomment
     cam_->startCapture();
     if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
-
+    */
     RCLCPP_INFO_STREAM(get_logger(), "img_publisher node started");
   }
 

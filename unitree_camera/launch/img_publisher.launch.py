@@ -15,10 +15,9 @@
 # TODO - document
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetLaunchConfiguration, Shutdown
-from launch.substitutions import Command, TextSubstitution, \
-    PathJoinSubstitution, LaunchConfiguration
-from launch.conditions import IfCondition, LaunchConfigurationEquals
+from launch.actions import DeclareLaunchArgument, SetLaunchConfiguration
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+from launch.conditions import LaunchConfigurationEquals
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
@@ -53,7 +52,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             name='enable_point_cloud',
-            default_value='true',
+            default_value='false',
             choices=['true','false'],
             description='Enable publishing point cloud data.',
         ),

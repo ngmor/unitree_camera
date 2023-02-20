@@ -33,6 +33,35 @@ def generate_launch_description():
             choices=['head_front', 'head_bottom', 'body_left', 'body_right'],
             description='Which camera to publish images from.',
         ),
+        DeclareLaunchArgument(
+            name='enable_raw',
+            default_value='false',
+            choices=['true','false'],
+            description='Enable publishing of raw frames.',
+        ),
+        DeclareLaunchArgument(
+            name='enable_rect',
+            default_value='true',
+            choices=['true','false'],
+            description='Enable publishing of rectified frames.',
+        ),
+        DeclareLaunchArgument(
+            name='enable_depth',
+            default_value='false',
+            choices=['true','false'],
+            description='Enable publishing of depth frames.',
+        ),
+        DeclareLaunchArgument(
+            name='enable_point_cloud',
+            default_value='true',
+            choices=['true','false'],
+            description='Enable publishing point cloud data.',
+        ),
+        DeclareLaunchArgument(
+            name='point_cloud_frame',
+            default_value='map',
+            description='Frame ID for point cloud messages.',
+        ),
         SetLaunchConfiguration(
             name='node_name',
             value=[
@@ -52,35 +81,13 @@ def generate_launch_description():
                 "stereo_camera_config1.yaml", # head_front camera and body_right camera
             )
         ),
-
-    # param.description = "Enable publishing of raw frames.";
-    # declare_parameter("enable_raw", false, param);
-    # enable_raw_ = get_parameter("enable_raw").get_parameter_value().get<bool>();
-
-    # param.description = "Enable publishing of rectified frames.";
-    # declare_parameter("enable_rect", true, param);
-    # enable_rect_ = get_parameter("enable_rect").get_parameter_value().get<bool>();
-
-    # param.description = "Enable publishing of depth frames.";
-    # declare_parameter("enable_depth", false, param);
-    # enable_depth_ = get_parameter("enable_depth").get_parameter_value().get<bool>();
-
-    # param.description = "Enable publishing point cloud data.";
-    # declare_parameter("enable_point_cloud", false, param);
-    # enable_point_cloud_ = get_parameter("enable_point_cloud").get_parameter_value().get<bool>();
-
-    # param.description = "Frame ID for point cloud messages.";
-    # declare_parameter("point_cloud_frame", "map", param);
-    # point_cloud_frame_ = get_parameter("point_cloud_frame").get_parameter_value().get<std::string>();
-
-
         Node(
             package='unitree_camera',
             executable='img_publisher',
             name=LaunchConfiguration('node_name'),
             output='screen',
             parameters=[{
-                'use_yaml':True,
+                'use_yaml': True,
                 'yaml_path':
                     ParameterValue(
                         PathJoinSubstitution([
@@ -90,6 +97,11 @@ def generate_launch_description():
                         ]),
                         value_type=str
                     ),
+                'enable_raw': LaunchConfiguration('enable_raw'),
+                'enable_rect': LaunchConfiguration('enable_rect'),
+                'enable_depth': LaunchConfiguration('enable_depth'),
+                'enable_point_cloud': LaunchConfiguration('enable_point_cloud'),
+                'point_cloud_frame': LaunchConfiguration('point_cloud_frame'),
             }]
         ),
     ])

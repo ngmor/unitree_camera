@@ -92,14 +92,11 @@ public:
     }
 
     //Timers
-    /* TODO uncomment
     timer_ = create_wall_timer(interval_ms_, std::bind(&ImgPublisher::timer_callback, this));
-    */
 
     frame_size_ = cv::Size {frame_width, frame_height};
 
     //Initialize camera
-    /* TODO uncomment
     if (!use_yaml) {
       cam_ = std::make_unique<UnitreeCamera>(device_node);
     } else {
@@ -120,7 +117,6 @@ public:
       cam_->setRawFrameSize(frame_size_);
       cam_->setRawFrameRate(fps_);
     }
-    */
 
     if (enable_raw_) {
       pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_raw", 10);
@@ -128,11 +124,9 @@ public:
     }
 
     if (enable_rect_) {
-      /* TODO uncomment
       if (!use_yaml) {
         cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
       }
-      */
 
       pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_rect", 10);
       pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("~/right/image_rect", 10);
@@ -145,14 +139,13 @@ public:
       pub_point_cloud_ = create_publisher<sensor_msgs::msg::PointCloud2>("~/point_cloud", 10);
     }
 
-    /* TODO uncomment
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
 
     //Start camera capturing
     
     cam_->startCapture();
     if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
-    */
+
     RCLCPP_INFO_STREAM(get_logger(), "img_publisher node started");
   }
 

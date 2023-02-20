@@ -145,10 +145,11 @@ public:
       pub_point_cloud_ = create_publisher<sensor_msgs::msg::PointCloud2>("~/point_cloud", 10);
     }
 
+    /* TODO uncomment
     RCLCPP_INFO_STREAM(get_logger(), "Device Position Number: " << cam_->getPosNumber());
 
     //Start camera capturing
-    /* TODO uncomment
+    
     cam_->startCapture();
     if (enable_depth_ || enable_point_cloud_) {cam_->startStereoCompute();}
     */

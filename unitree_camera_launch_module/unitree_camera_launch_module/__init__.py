@@ -19,10 +19,12 @@
 
 from .and_condition import AndCondition
 from .or_condition import OrCondition
+from .replace_text_substitution import ReplaceTextSubstitution
 from .ternary_text_substitution import TernaryTextSubstitution
 
 __all__ = [
     'AndCondition',
     'OrCondition',
+    'ReplaceTextSubstitution',
     'TernaryTextSubstitution',
 ]

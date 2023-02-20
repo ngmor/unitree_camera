@@ -21,7 +21,8 @@ from launch.conditions import LaunchConfigurationEquals
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
-from unitree_camera_launch_module import OrCondition, TernaryTextSubstitution
+from unitree_camera_launch_module import OrCondition, TernaryTextSubstitution, \
+    ReplaceTextSubstitution
 
 def generate_launch_description():
     """Launch the image publisher node for a certain specified camera."""
@@ -62,11 +63,8 @@ def generate_launch_description():
             description='Frame ID for point cloud messages.',
         ),
         SetLaunchConfiguration(
-            name='node_name',
-            value=[
-                LaunchConfiguration('camera'),
-                '_cam',
-            ]
+            name='namespace',
+            value=ReplaceTextSubstitution(LaunchConfiguration('camera'), '_', '/'), # replace underscores with slashes
         ),
         # select a launch file based on which camera we're using
         SetLaunchConfiguration(
@@ -83,7 +81,8 @@ def generate_launch_description():
         Node(
             package='unitree_camera',
             executable='img_publisher',
-            name=LaunchConfiguration('node_name'),
+            namespace=LaunchConfiguration('namespace'),
+            name='cam',
             output='screen',
             parameters=[{
                 'use_yaml': True,

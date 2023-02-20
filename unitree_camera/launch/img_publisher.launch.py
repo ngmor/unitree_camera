@@ -34,28 +34,24 @@ def generate_launch_description():
             description='Which camera to publish images from.',
         ),
         SetLaunchConfiguration(
-            name='dummy1',
-            value='false'
+            name='node_name',
+            value=[
+                LaunchConfiguration('camera'),
+                '_cam',
+            ]
         ),
-        SetLaunchConfiguration(
-            name='dummy2',
-            value='false'
-        ),
+        # select a launch file based on which camera we're using
         SetLaunchConfiguration(
             name='yaml_file',
             value=TernaryTextSubstitution(
                 OrCondition([
-                    LaunchConfigurationEquals('dummy1', 'false'),
-                    LaunchConfigurationEquals('dummy1', 'false'),
+                    LaunchConfigurationEquals('camera', 'head_bottom'),
+                    LaunchConfigurationEquals('camera', 'body_left'),
                 ]),
-                "true val",
-                "false_val"
+                "stereo_camera_config0.yaml", # head_bottom camera and body_left camera
+                "stereo_camera_config1.yaml", # head_front camera and body_right camera
             )
         ),
-
-    # param.description = "Path to yaml configuration file.";
-    # declare_parameter("yaml_path", "", param);
-    # auto yaml_path = get_parameter("yaml_path").get_parameter_value().get<std::string>();
 
     # param.description = "Enable publishing of raw frames.";
     # declare_parameter("enable_raw", false, param);
@@ -81,7 +77,7 @@ def generate_launch_description():
         Node(
             package='unitree_camera',
             executable='img_publisher',
-            name=LaunchConfiguration('camera'),
+            name=LaunchConfiguration('node_name'),
             output='screen',
             parameters=[{
                 'use_yaml':True,

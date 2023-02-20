@@ -20,44 +20,44 @@ from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    """Launch selected head camera nodes."""
+    """Launch selected body camera nodes."""
     return LaunchDescription([
 
-        ########## FRONT CAMERA ##########
+        ########## LEFT CAMERA ##########
         DeclareLaunchArgument(
-            name='front.enable_cam',
+            name='left.enable_cam',
             default_value='true',
             choices=['true','false'],
-            description='Enable the front camera.',
+            description='Enable the left camera.',
         ),
         DeclareLaunchArgument(
-            name='front.enable_raw',
+            name='left.enable_raw',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of raw frames from the front camera.',
+            description='Enable publishing of raw frames from the left camera.',
         ),
         DeclareLaunchArgument(
-            name='front.enable_rect',
+            name='left.enable_rect',
             default_value='true',
             choices=['true','false'],
-            description='Enable publishing of rectified frames from the front camera.',
+            description='Enable publishing of rectified frames from the left camera.',
         ),
         DeclareLaunchArgument(
-            name='front.enable_depth',
+            name='left.enable_depth',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of depth frames from the front camera.',
+            description='Enable publishing of depth frames from the left camera.',
         ),
         DeclareLaunchArgument(
-            name='front.enable_point_cloud',
+            name='left.enable_point_cloud',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing point cloud data from the front camera.',
+            description='Enable publishing point cloud data from the left camera.',
         ),
         DeclareLaunchArgument(
-            name='front.point_cloud_frame',
-            default_value='camera_face',
-            description='Frame ID for point cloud messages from the front camera.',
+            name='left.point_cloud_frame',
+            default_value='camera_left',
+            description='Frame ID for point cloud messages from the left camera.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
@@ -68,51 +68,51 @@ def generate_launch_description():
                 ]),
             ]),
             launch_arguments=[
-                ('camera', 'head_front'),
-                ('enable_raw', LaunchConfiguration('front.enable_raw')),
-                ('enable_rect', LaunchConfiguration('front.enable_rect')),
-                ('enable_depth', LaunchConfiguration('front.enable_depth')),
-                ('enable_point_cloud', LaunchConfiguration('front.enable_point_cloud')),
-                ('point_cloud_frame', LaunchConfiguration('front.point_cloud_frame')),
+                ('camera', 'body_left'),
+                ('enable_raw', LaunchConfiguration('left.enable_raw')),
+                ('enable_rect', LaunchConfiguration('left.enable_rect')),
+                ('enable_depth', LaunchConfiguration('left.enable_depth')),
+                ('enable_point_cloud', LaunchConfiguration('left.enable_point_cloud')),
+                ('point_cloud_frame', LaunchConfiguration('left.point_cloud_frame')),
             ],
-            condition=IfCondition(LaunchConfiguration('front.enable_cam')),
+            condition=IfCondition(LaunchConfiguration('left.enable_cam')),
         ),
 
-        ########## BOTTOM CAMERA ##########
+        ########## RIGHT CAMERA ##########
         DeclareLaunchArgument(
-            name='bottom.enable_cam',
+            name='right.enable_cam',
             default_value='true',
             choices=['true','false'],
-            description='Enable the bottom camera.',
+            description='Enable the right camera.',
         ),
         DeclareLaunchArgument(
-            name='bottom.enable_raw',
+            name='right.enable_raw',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of raw frames from the bottom camera.',
+            description='Enable publishing of raw frames from the right camera.',
         ),
         DeclareLaunchArgument(
-            name='bottom.enable_rect',
+            name='right.enable_rect',
             default_value='true',
             choices=['true','false'],
-            description='Enable publishing of rectified frames from the bottom camera.',
+            description='Enable publishing of rectified frames from the right camera.',
         ),
         DeclareLaunchArgument(
-            name='bottom.enable_depth',
+            name='right.enable_depth',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of depth frames from the bottom camera.',
+            description='Enable publishing of depth frames from the right camera.',
         ),
         DeclareLaunchArgument(
-            name='bottom.enable_point_cloud',
+            name='right.enable_point_cloud',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing point cloud data from the bottom camera.',
+            description='Enable publishing point cloud data from the right camera.',
         ),
         DeclareLaunchArgument(
-            name='bottom.point_cloud_frame',
-            default_value='camera_chin',
-            description='Frame ID for point cloud messages from the bottom camera.',
+            name='right.point_cloud_frame',
+            default_value='camera_right',
+            description='Frame ID for point cloud messages from the right camera.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
@@ -123,13 +123,13 @@ def generate_launch_description():
                 ]),
             ]),
             launch_arguments=[
-                ('camera', 'head_bottom'),
-                ('enable_raw', LaunchConfiguration('bottom.enable_raw')),
-                ('enable_rect', LaunchConfiguration('bottom.enable_rect')),
-                ('enable_depth', LaunchConfiguration('bottom.enable_depth')),
-                ('enable_point_cloud', LaunchConfiguration('bottom.enable_point_cloud')),
-                ('point_cloud_frame', LaunchConfiguration('bottom.point_cloud_frame')),
+                ('camera', 'body_right'),
+                ('enable_raw', LaunchConfiguration('right.enable_raw')),
+                ('enable_rect', LaunchConfiguration('right.enable_rect')),
+                ('enable_depth', LaunchConfiguration('right.enable_depth')),
+                ('enable_point_cloud', LaunchConfiguration('right.enable_point_cloud')),
+                ('point_cloud_frame', LaunchConfiguration('right.point_cloud_frame')),
             ],
-            condition=IfCondition(LaunchConfiguration('bottom.enable_cam')),
+            condition=IfCondition(LaunchConfiguration('right.enable_cam')),
         ),
     ])

@@ -273,8 +273,8 @@ std::shared_ptr<sensor_msgs::msg::PointCloud2> unitree_pcl_to_ros_msg(
     //z axis is pointing up from the camera's perspective
     cloud.points.push_back(pcl::PointXYZRGB {
       point.pts(2),   //x
-      point.pts(0),   //y
-      point.pts(1),   //z
+      -point.pts(0),  //y
+      -point.pts(1),  //z
       point.clr(2),   //r
       point.clr(1),   //g
       point.clr(0)    //b

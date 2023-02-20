@@ -22,7 +22,7 @@ from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
-from unitree_camera_launch_module.ternary_text_substitution import TernaryTextSubstitution
+from unitree_camera_launch_module import OrCondition, TernaryTextSubstitution
 
 def generate_launch_description():
     """Launch the image publisher node for a certain specified camera."""
@@ -34,12 +34,23 @@ def generate_launch_description():
             description='Which camera to publish images from.',
         ),
         SetLaunchConfiguration(
-            name='dummy',
+            name='dummy1',
+            value='false'
+        ),
+        SetLaunchConfiguration(
+            name='dummy2',
             value='false'
         ),
         SetLaunchConfiguration(
             name='yaml_file',
-            value=TernaryTextSubstitution(LaunchConfigurationEquals('dummy', 'true'),"true val", "false_val")
+            value=TernaryTextSubstitution(
+                OrCondition([
+                    LaunchConfigurationEquals('dummy1', 'false'),
+                    LaunchConfigurationEquals('dummy1', 'false'),
+                ]),
+                "true val",
+                "false_val"
+            )
         ),
 
     # param.description = "Path to yaml configuration file.";

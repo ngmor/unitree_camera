@@ -71,6 +71,7 @@ Several arguments are shared between multiple launch files with the same functio
 
 Arguments:
 - `${cam}.enable_cam` - Enable the `${cam}` camera
+- `${cam}.fps` - The frame rate of the `${cam}` camera (fps). Should not exceed the FPS set in the YAML file.
 - `${cam}.enable_raw` - Enable publishing of raw frames from the `${cam}` camera.
 - `${cam}.enable_rect` - Enable publishing of rectified frames from the `${cam}` camera.
 - `${cam}.enable_depth` - Enable publishing of depth frames from the `${cam}` camera.
@@ -109,6 +110,7 @@ General launch file for starting an `img_publisher` node specifically for one ca
 
 #### Arguments
 - `camera` - Which camera to publish images from. Options are ['head_front', 'head_bottom', 'body_left', 'body_right']
+- `fps` - The frame rate of the camera (fps). Should not exceed the FPS set in the YAML file.
 - `enable_raw` - Enable publishing of raw frames.
 - `enable_rect` - Enable publishing of rectified frames.
 - `enable_depth` - Enable publishing of depth frames.

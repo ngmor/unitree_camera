@@ -34,6 +34,11 @@ def generate_launch_description():
             description='Which camera to publish images from.',
         ),
         DeclareLaunchArgument(
+            name='fps',
+            default_value='30',
+            description='The frame rate of the camera (fps). Should not exceed the FPS set in the YAML file.',
+        ),
+        DeclareLaunchArgument(
             name='enable_raw',
             default_value='false',
             choices=['true','false'],
@@ -95,6 +100,7 @@ def generate_launch_description():
                         ]),
                         value_type=str
                     ),
+                'fps': LaunchConfiguration('fps'),
                 'enable_raw': LaunchConfiguration('enable_raw'),
                 'enable_rect': LaunchConfiguration('enable_rect'),
                 'enable_depth': LaunchConfiguration('enable_depth'),

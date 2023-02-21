@@ -31,6 +31,11 @@ def generate_launch_description():
             description='Enable the body left camera.',
         ),
         DeclareLaunchArgument(
+            name='body.left.fps',
+            default_value='30',
+            description='The frame rate of the body left camera (fps). Should not exceed the FPS set in the YAML file.',
+        ),
+        DeclareLaunchArgument(
             name='body.left.enable_raw',
             default_value='false',
             choices=['true','false'],
@@ -69,6 +74,7 @@ def generate_launch_description():
             ]),
             launch_arguments=[
                 ('camera', 'body_left'),
+                ('fps', LaunchConfiguration('body.left.fps')),
                 ('enable_raw', LaunchConfiguration('body.left.enable_raw')),
                 ('enable_rect', LaunchConfiguration('body.left.enable_rect')),
                 ('enable_depth', LaunchConfiguration('body.left.enable_depth')),
@@ -84,6 +90,11 @@ def generate_launch_description():
             default_value='true',
             choices=['true','false'],
             description='Enable the right camera.',
+        ),
+        DeclareLaunchArgument(
+            name='body.right.fps',
+            default_value='30',
+            description='The frame rate of the body right camera (fps). Should not exceed the FPS set in the YAML file.',
         ),
         DeclareLaunchArgument(
             name='body.right.enable_raw',
@@ -124,6 +135,7 @@ def generate_launch_description():
             ]),
             launch_arguments=[
                 ('camera', 'body_right'),
+                ('fps', LaunchConfiguration('body.right.fps')),
                 ('enable_raw', LaunchConfiguration('body.right.enable_raw')),
                 ('enable_rect', LaunchConfiguration('body.right.enable_rect')),
                 ('enable_depth', LaunchConfiguration('body.right.enable_depth')),

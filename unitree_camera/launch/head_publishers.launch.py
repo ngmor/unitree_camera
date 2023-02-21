@@ -31,6 +31,11 @@ def generate_launch_description():
             description='Enable the head front camera.',
         ),
         DeclareLaunchArgument(
+            name='head.front.fps',
+            default_value='30',
+            description='The frame rate of the head front camera (fps). Should not exceed the FPS set in the YAML file.',
+        ),
+        DeclareLaunchArgument(
             name='head.front.enable_raw',
             default_value='false',
             choices=['true','false'],
@@ -69,6 +74,7 @@ def generate_launch_description():
             ]),
             launch_arguments=[
                 ('camera', 'head_front'),
+                ('fps', LaunchConfiguration('head.front.fps')),
                 ('enable_raw', LaunchConfiguration('head.front.enable_raw')),
                 ('enable_rect', LaunchConfiguration('head.front.enable_rect')),
                 ('enable_depth', LaunchConfiguration('head.front.enable_depth')),
@@ -84,6 +90,11 @@ def generate_launch_description():
             default_value='true',
             choices=['true','false'],
             description='Enable the bottom camera.',
+        ),
+        DeclareLaunchArgument(
+            name='head.bottom.fps',
+            default_value='30',
+            description='The frame rate of the head bottom camera (fps). Should not exceed the FPS set in the YAML file.',
         ),
         DeclareLaunchArgument(
             name='head.bottom.enable_raw',
@@ -124,6 +135,7 @@ def generate_launch_description():
             ]),
             launch_arguments=[
                 ('camera', 'head_bottom'),
+                ('fps', LaunchConfiguration('head.bottom.fps')),
                 ('enable_raw', LaunchConfiguration('head.bottom.enable_raw')),
                 ('enable_rect', LaunchConfiguration('head.bottom.enable_rect')),
                 ('enable_depth', LaunchConfiguration('head.bottom.enable_depth')),

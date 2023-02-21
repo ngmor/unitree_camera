@@ -28,36 +28,36 @@ def generate_launch_description():
             name='head.front.enable_cam',
             default_value='true',
             choices=['true','false'],
-            description='Enable the front camera.',
+            description='Enable the head front camera.',
         ),
         DeclareLaunchArgument(
             name='head.front.enable_raw',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of raw frames from the front camera.',
+            description='Enable publishing of raw frames from the head front camera.',
         ),
         DeclareLaunchArgument(
             name='head.front.enable_rect',
             default_value='true',
             choices=['true','false'],
-            description='Enable publishing of rectified frames from the front camera.',
+            description='Enable publishing of rectified frames from the head front camera.',
         ),
         DeclareLaunchArgument(
             name='head.front.enable_depth',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of depth frames from the front camera.',
+            description='Enable publishing of depth frames from the head front camera.',
         ),
         DeclareLaunchArgument(
             name='head.front.enable_point_cloud',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing point cloud data from the front camera.',
+            description='Enable publishing point cloud data from the head front camera.',
         ),
         DeclareLaunchArgument(
             name='head.front.point_cloud_frame',
             default_value='camera_face',
-            description='Frame ID for point cloud messages from the front camera.',
+            description='Frame ID for point cloud messages from the head front camera.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
@@ -89,30 +89,30 @@ def generate_launch_description():
             name='head.bottom.enable_raw',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of raw frames from the bottom camera.',
+            description='Enable publishing of raw frames from the head bottom camera.',
         ),
         DeclareLaunchArgument(
             name='head.bottom.enable_rect',
             default_value='true',
             choices=['true','false'],
-            description='Enable publishing of rectified frames from the bottom camera.',
+            description='Enable publishing of rectified frames from the head bottom camera.',
         ),
         DeclareLaunchArgument(
             name='head.bottom.enable_depth',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing of depth frames from the bottom camera.',
+            description='Enable publishing of depth frames from the head bottom camera.',
         ),
         DeclareLaunchArgument(
             name='head.bottom.enable_point_cloud',
             default_value='false',
             choices=['true','false'],
-            description='Enable publishing point cloud data from the bottom camera.',
+            description='Enable publishing point cloud data from the head bottom camera.',
         ),
         DeclareLaunchArgument(
             name='head.bottom.point_cloud_frame',
             default_value='camera_chin',
-            description='Frame ID for point cloud messages from the bottom camera.',
+            description='Frame ID for point cloud messages from the head bottom camera.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([

@@ -16,6 +16,7 @@
   <depend>pcl</depend>
   <depend>pcl_conversions</depend>
   <depend>Boost</depend>
+  <depend>image_transport</depend>
 
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>unitree_camera_launch_module</exec_depend>

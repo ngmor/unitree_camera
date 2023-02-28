@@ -7,10 +7,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/header.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
 #include "UnitreeCameraSDK.hpp"
 #include "cv_bridge/cv_bridge.h"
 #include "pcl_conversions/pcl_conversions.h"
+#include "image_transport/image_transport.hpp"
 
 using namespace std::chrono_literals;
 
@@ -110,7 +112,6 @@ public:
       RCLCPP_ERROR_STREAM(get_logger(), msg);
       throw std::logic_error(msg);
     }
-    
 
     //Set frame size and fps
     if (!use_yaml) {
@@ -128,8 +129,21 @@ public:
         cam_->setRectFrameSize(cv::Size(frame_size_.width >> 2, frame_size_.height >> 1));
       }
 
-      pub_rect_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_rect", 10);
-      pub_rect_right_ = create_publisher<sensor_msgs::msg::Image>("~/right/image_rect", 10);
+      pub_rect_left_ = std::make_shared<image_transport::CameraPublisher>(
+        image_transport::create_camera_publisher(
+          this,
+          "~/left/image_rect",
+          rclcpp::QoS {100}.get_rmw_qos_profile()
+        )
+      );
+
+      pub_rect_right_ = std::make_shared<image_transport::CameraPublisher>(
+        image_transport::create_camera_publisher(
+          this,
+          "~/right/image_rect",
+          rclcpp::QoS {100}.get_rmw_qos_profile()
+        )
+      );
     }
 
     if (enable_depth_) {
@@ -159,8 +173,8 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_left_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_right_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_left_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_rect_right_;
+  std::shared_ptr<image_transport::CameraPublisher> pub_rect_left_;
+  std::shared_ptr<image_transport::CameraPublisher> pub_rect_right_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_point_cloud_;
 
@@ -172,8 +186,10 @@ private:
   cv::Size frame_size_ {1856, 800};
   const std::string color_encoding_ = "bgr8";
   const std::string depth_encoding_ = "8UC3";
+  sensor_msgs::msg::CameraInfo camera_info_; //unsure how to get this from UnitreeCameraSDK
 
   std::unique_ptr<UnitreeCamera> cam_;
+  std::unique_ptr<image_transport::ImageTransport> img_trans_;
 
   void timer_callback()
   {
@@ -187,6 +203,7 @@ private:
 
     std_msgs::msg::Header header;
     header.stamp = get_clock()->now();
+    camera_info_.header = header;
 
     std::chrono::microseconds t;
     
@@ -222,8 +239,8 @@ private:
         cv::flip(rect_right, rect_right, -1);
 
         //Publish frames
-        pub_rect_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_left).toImageMsg()));
-        pub_rect_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_right).toImageMsg()));
+        pub_rect_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_left).toImageMsg()), camera_info_);
+        pub_rect_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, rect_right).toImageMsg()), camera_info_);
       }
     }
 

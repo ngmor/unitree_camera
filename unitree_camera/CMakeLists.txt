@@ -17,6 +17,7 @@ find_package(PCL 1.12 REQUIRED QUIET) # bad solution
                                       # https://github.com/PointCloudLibrary/pcl/issues/2651
 find_package(pcl_conversions REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(image_transport REQUIRED)
 include_directories(SYSTEM 
   ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
@@ -27,12 +28,12 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(img_publisher src/img_publisher.cpp)
 target_link_libraries(img_publisher UnitreeCameraSDK::UnitreeCameraSDK)
 ament_target_dependencies(img_publisher
-  rclcpp std_msgs sensor_msgs cv_bridge pcl_conversions Boost
+  rclcpp std_msgs sensor_msgs cv_bridge pcl_conversions Boost image_transport
 )
 add_executable(img_subscriber src/img_subscriber.cpp)
 
 ament_target_dependencies(img_subscriber
-  rclcpp std_msgs sensor_msgs cv_bridge
+  rclcpp std_msgs sensor_msgs cv_bridge image_transport
 )
 target_link_libraries(img_subscriber ${OpenCV_LIBRARIES})
 

@@ -120,8 +120,21 @@ public:
     }
 
     if (enable_raw_) {
-      pub_raw_left_ = create_publisher<sensor_msgs::msg::Image>("~/left/image_raw", 10);
-      pub_raw_right_ = create_publisher<sensor_msgs::msg::Image>("~/right/image_raw", 10);
+      pub_raw_left_ = std::make_shared<image_transport::CameraPublisher>(
+        image_transport::create_camera_publisher(
+          this,
+          "~/image_raw/left",
+          rclcpp::QoS {10}.get_rmw_qos_profile()
+        )
+      );
+
+      pub_raw_right_ = std::make_shared<image_transport::CameraPublisher>(
+        image_transport::create_camera_publisher(
+          this,
+          "~/image_raw/right",
+          rclcpp::QoS {10}.get_rmw_qos_profile()
+        )
+      );
     }
 
     if (enable_rect_) {
@@ -132,7 +145,7 @@ public:
       pub_rect_left_ = std::make_shared<image_transport::CameraPublisher>(
         image_transport::create_camera_publisher(
           this,
-          "~/left/image_rect",
+          "~/image_rect/left",
           rclcpp::QoS {10}.get_rmw_qos_profile()
         )
       );
@@ -140,7 +153,7 @@ public:
       pub_rect_right_ = std::make_shared<image_transport::CameraPublisher>(
         image_transport::create_camera_publisher(
           this,
-          "~/right/image_rect",
+          "~/image_rect/right",
           rclcpp::QoS {10}.get_rmw_qos_profile()
         )
       );
@@ -171,8 +184,8 @@ public:
   }
 private:
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_left_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_raw_right_;
+  std::shared_ptr<image_transport::CameraPublisher> pub_raw_left_;
+  std::shared_ptr<image_transport::CameraPublisher> pub_raw_right_;
   std::shared_ptr<image_transport::CameraPublisher> pub_rect_left_;
   std::shared_ptr<image_transport::CameraPublisher> pub_rect_right_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
@@ -223,8 +236,8 @@ private:
         ).copyTo(raw_right);
 
         //Publish frames
-        pub_raw_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_left).toImageMsg()));
-        pub_raw_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_right).toImageMsg()));
+        pub_raw_left_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_left).toImageMsg()), camera_info_);
+        pub_raw_right_->publish(*(cv_bridge::CvImage(header, color_encoding_, raw_right).toImageMsg()), camera_info_);
       }
     }
 

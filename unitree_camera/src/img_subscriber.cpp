@@ -3,6 +3,7 @@
 //TODO document
 #include <string>
 #include <string_view>
+#include <regex>
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
@@ -10,11 +11,11 @@
 #include <opencv2/highgui.hpp>
 #include "image_transport/image_transport.hpp"
 
-const std::string RAW_LEFT_WINDOW = "Raw Left Image";
-const std::string RAW_RIGHT_WINDOW = "Raw Right Image";
-const std::string RECT_LEFT_WINDOW = "Rectified Left Image";
-const std::string RECT_RIGHT_WINDOW = "Rectified Right Image";
-const std::string DEPTH_WINDOW = "Depth";
+const std::string RAW_LEFT_WINDOW = " raw left image";
+const std::string RAW_RIGHT_WINDOW = " raw right image";
+const std::string RECT_LEFT_WINDOW = " rectified left image";
+const std::string RECT_RIGHT_WINDOW = " rectified right image";
+const std::string DEPTH_WINDOW = " depth image";
 
 void show_image(const std::string & window, const sensor_msgs::msg::Image::ConstSharedPtr& img);
 
@@ -22,7 +23,13 @@ class ImgSubscriber : public rclcpp::Node
 {
 public:
   ImgSubscriber()
-  : Node("img_subscriber")
+  : Node("img_subscriber"),
+    prefix_{std::regex_replace(get_namespace(), std::regex("/"), " ")},
+    raw_left_window_{prefix_ + RAW_LEFT_WINDOW},
+    raw_right_window_{prefix_ + RAW_RIGHT_WINDOW},
+    rect_left_window_{prefix_ + RECT_LEFT_WINDOW},
+    rect_right_window_{prefix_ + RECT_RIGHT_WINDOW},
+    depth_window_{prefix_ + DEPTH_WINDOW}
   {
     //Subscribers
     sub_raw_left_ = std::make_shared<image_transport::CameraSubscriber>(
@@ -84,36 +91,43 @@ private:
   std::shared_ptr<image_transport::CameraSubscriber> sub_rect_right_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 
+  const std::string prefix_ = "";
+  const std::string raw_left_window_ = "";
+  const std::string raw_right_window_ = "";
+  const std::string rect_left_window_ = "";
+  const std::string rect_right_window_ = "";
+  const std::string depth_window_ = "";
+
   void raw_left_callback(
     const sensor_msgs::msg::Image::ConstSharedPtr& img,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
   ) {
-    show_image(RAW_LEFT_WINDOW, img);
+    show_image(raw_left_window_, img);
   }
 
   void raw_right_callback(
     const sensor_msgs::msg::Image::ConstSharedPtr& img,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
   ) {
-    show_image(RAW_RIGHT_WINDOW, img);
+    show_image(raw_right_window_, img);
   }
 
   void rect_left_callback(
     const sensor_msgs::msg::Image::ConstSharedPtr& img,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
   ) {
-    show_image(RECT_LEFT_WINDOW, img);
+    show_image(rect_left_window_, img);
   }
 
   void rect_right_callback(
     const sensor_msgs::msg::Image::ConstSharedPtr& img,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
   ) {
-    show_image(RECT_RIGHT_WINDOW, img);
+    show_image(rect_right_window_, img);
   }
 
   void depth_callback(const sensor_msgs::msg::Image::ConstSharedPtr& img) {
-    show_image(DEPTH_WINDOW, img);
+    show_image(depth_window_, img);
   }
 
 

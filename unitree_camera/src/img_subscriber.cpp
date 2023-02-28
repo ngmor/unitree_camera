@@ -5,8 +5,10 @@
 #include <string_view>
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/highgui.hpp>
+#include "image_transport/image_transport.hpp"
 
 const std::string RAW_LEFT_WINDOW = "Raw Left Image";
 const std::string RAW_RIGHT_WINDOW = "Raw Right Image";
@@ -31,15 +33,23 @@ public:
       10,
       std::bind(&ImgSubscriber::raw_right_callback, this, std::placeholders::_1)
     );
-    sub_rect_left_ = create_subscription<sensor_msgs::msg::Image>(
-      "left/image_rect",
-      10,
-      std::bind(&ImgSubscriber::rect_left_callback, this, std::placeholders::_1)
+    sub_rect_left_ = std::make_shared<image_transport::CameraSubscriber>(
+        image_transport::create_camera_subscription(
+          this,
+          "left/image_rect",
+          std::bind(&ImgSubscriber::rect_left_callback, this, std::placeholders::_1, std::placeholders::_2),
+          "compressed",
+          rclcpp::QoS {10}.get_rmw_qos_profile()
+        )
     );
-    sub_rect_right_ = create_subscription<sensor_msgs::msg::Image>(
-      "right/image_rect",
-      10,
-      std::bind(&ImgSubscriber::rect_right_callback, this, std::placeholders::_1)
+    sub_rect_right_ = std::make_shared<image_transport::CameraSubscriber>(
+        image_transport::create_camera_subscription(
+          this,
+          "right/image_rect",
+          std::bind(&ImgSubscriber::rect_right_callback, this, std::placeholders::_1, std::placeholders::_2),
+          "compressed",
+          rclcpp::QoS {10}.get_rmw_qos_profile()
+        )
     );
     sub_depth_ = create_subscription<sensor_msgs::msg::Image>(
       "image_depth",
@@ -66,8 +76,8 @@ public:
 private:
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_left_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_raw_right_;
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_left_;
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_rect_right_;
+  std::shared_ptr<image_transport::CameraSubscriber> sub_rect_left_;
+  std::shared_ptr<image_transport::CameraSubscriber> sub_rect_right_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
 
   void raw_left_callback(const sensor_msgs::msg::Image & msg) {
@@ -82,14 +92,20 @@ private:
     cv::waitKey(1);
   }
 
-  void rect_left_callback(const sensor_msgs::msg::Image & msg) {
-    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
+  void rect_left_callback(
+    const sensor_msgs::msg::Image::ConstSharedPtr& img,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
+  ) {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(*img, img->encoding);
     cv::imshow(RECT_LEFT_WINDOW, cv_ptr->image);
     cv::waitKey(1);
   }
 
-  void rect_right_callback(const sensor_msgs::msg::Image & msg) {
-    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, msg.encoding);
+  void rect_right_callback(
+    const sensor_msgs::msg::Image::ConstSharedPtr& img,
+    const sensor_msgs::msg::CameraInfo::ConstSharedPtr&
+  ) {
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(*img, img->encoding);
     cv::imshow(RECT_RIGHT_WINDOW, cv_ptr->image);
     cv::waitKey(1);
   }

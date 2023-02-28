@@ -133,7 +133,7 @@ public:
         image_transport::create_camera_publisher(
           this,
           "~/left/image_rect",
-          rclcpp::QoS {100}.get_rmw_qos_profile()
+          rclcpp::QoS {10}.get_rmw_qos_profile()
         )
       );
 
@@ -141,7 +141,7 @@ public:
         image_transport::create_camera_publisher(
           this,
           "~/right/image_rect",
-          rclcpp::QoS {100}.get_rmw_qos_profile()
+          rclcpp::QoS {10}.get_rmw_qos_profile()
         )
       );
     }
@@ -189,7 +189,6 @@ private:
   sensor_msgs::msg::CameraInfo camera_info_; //unsure how to get this from UnitreeCameraSDK
 
   std::unique_ptr<UnitreeCamera> cam_;
-  std::unique_ptr<image_transport::ImageTransport> img_trans_;
 
   void timer_callback()
   {

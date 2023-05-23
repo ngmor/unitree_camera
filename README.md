@@ -2,15 +2,21 @@
 This repository has code for interfacing with the Unitree Go1's onboard cameras with ROS 2 Humble.
 
 ## Basic Usage
-### Building the Package
-The `unitree_camera` package relies on the `unitree_camera_launch_module` (in this repo, which defines custom Python launch substitutions), my fork of the [UnitreecameraSDK](https://github.com/ngmor/UnitreecameraSDK), and standard ROS 2 Humble image processing packages (OpenCV 4, PCL 1.12, cv_bridge, etc).
+### Installing dependencies
+The `unitree_camera` package relies on the `unitree_camera_launch_module` (in this repo, which defines custom Python launch substitutions), my fork of the [`UnitreecameraSDK`](https://github.com/ngmor/UnitreecameraSDK), and standard ROS 2 Humble image processing packages (OpenCV 4, PCL 1.12, cv_bridge, etc).
 
+The `UnitreecameraSDK` relies on `udev`. To install, run:
+```
+sudo apt install libudev-dev
+```
+
+### Building the Package
 To build:
 ```
 mkdir -p ws/src
 cd ws/src
 git clone git@github.com:ngmor/unitree_camera.git
-git clone git@github.com:ngmor/UnitreecameraSDK.git
+vcs import --input unitree_camera/unitree_camera.repos
 cd ..
 colcon build
 ```

@@ -5,6 +5,11 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Set path for OpenCV if using it
+if(UNITREE_CAMERA_USE_CUSTOM_OPENCV_DIR)
+  set(OpenCV_DIR ${UNITREE_CAMERA_OPENCV_DIR}/lib/cmake/opencv4)
+endif()
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

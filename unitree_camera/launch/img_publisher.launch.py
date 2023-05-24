@@ -30,7 +30,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             name='camera',
             default_value='head_front',
-            choices=['head_front', 'head_bottom', 'body_left', 'body_right'],
+            choices=['head_front', 'head_bottom', 'body_left', 'body_right', 'body_bottom'],
             description='Which camera to publish images from.',
         ),
         DeclareLaunchArgument(
@@ -78,8 +78,9 @@ def generate_launch_description():
                 OrCondition([
                     LaunchConfigurationEquals('camera', 'head_bottom'),
                     LaunchConfigurationEquals('camera', 'body_right'),
+                    LaunchConfigurationEquals('camera', 'body_bottom'),
                 ]),
-                "stereo_camera_config0.yaml", # head_bottom camera and body_right camera
+                "stereo_camera_config0.yaml", # head_bottom camera, body_right, and body_bototm camera
                 "stereo_camera_config1.yaml", # head_front camera and body_left camera
             )
         ),

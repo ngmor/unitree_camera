@@ -75,4 +75,24 @@ def generate_launch_description():
                 ('body.right.enable_cam', LaunchConfiguration('body.right.enable_cam')),
             ],
         ),
+
+        ########## BOTTOM ##########
+        DeclareLaunchArgument(
+            name='body.bottom.enable_cam',
+            default_value='true',
+            choices=['true','false'],
+            description='Enable the bottom camera subscriber.',
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([
+                PathJoinSubstitution([
+                    FindPackageShare('unitree_camera'),
+                    'launch',
+                    'bottom_subscribers.launch.py',
+                ]),
+            ]),
+            launch_arguments=[
+                ('body.bottom.enable_cam', LaunchConfiguration('body.bottom.enable_cam')),
+            ],
+        ),
     ])

@@ -30,7 +30,7 @@ The `UnitreecameraSDK` as of [this commit](https://github.com/unitreerobotics/Un
 
 The Jetson Xaviers/Nanos that come with the Unitree Go1 Edu already have this version of OpenCV installed locally in `usr/local` (at least the one I work with does). Since this is the case, the dependency is met and (assuming you have ROS 2 installed on these devices) you should be able to build this package with just a simple `colcon build` (see [building the package](#building-the-package)).
 
-However, if you've upgraded the OS on these devices or installed a newer version of OpenCV, this dependency may not be met. I've built a workaround into these packages, described here.
+However, if you've upgraded the OS on these devices or installed a newer version of OpenCV, this dependency may not be met. I've built a workaround into these packages, described below. **Note**: if you're just building locally to run the subscribers, you won't need to do this.
 
 #### Build OpenCV 4.1.1 from source
 You'll have to build OpenCV 4.1.1 [from source](https://opencv.org/opencv-4-1-1/). Target some directory `${opencv_4_1_1_dir}` for local installation using a `CMAKE_INSTALL_PREFIX`.
@@ -53,6 +53,10 @@ To run all image publishers on the Go1's head Nano (192.168.123.13), run:
 To run all image publishers on the Go1's body Nano (192.168.123.14) run:
 
 `ros2 launch unitree_camera body_publishers.launch.py`
+
+To run all the rear bottom camera on the Go1's body Xavier (192.168.123.15) run:
+
+`ros2 launch unitree_camera bottom_publishers.launch.py`
 
 To run all image subscribers, run:
 
@@ -98,6 +102,7 @@ Several arguments are shared between multiple launch files with the same functio
 - `head.bottom`
 - `body.left`
 - `body.right`
+- `body.bottom`
 
 Arguments:
 - `${cam}.enable_cam` - Enable the `${cam}` camera
@@ -118,6 +123,11 @@ Launches image publishers for the Go1's body Nano (192.168.123.14).
 
 `ros2 launch unitree_camera body_publishers.launch.py`
 
+### bottom_publishers.launch.py
+Launches image publishers for the Go1's body Xavier (192.168.123.15).
+
+`ros2 launch unitree_camera bottom_publishers.launch.py`
+
 ### head_subscribers.launch.py
 Launches image subscribers for topics from the Go1's head Nano publishers.
 
@@ -127,6 +137,11 @@ Launches image subscribers for topics from the Go1's head Nano publishers.
 Launches image subscribers for topics from the Go1's body Nano publishers.
 
 `ros2 launch unitree_camera body_subscribers.launch.py`
+
+### bottom_subscribers.launch.py
+Launches image subscribers for topics from the Go1's body Xavier publishers.
+
+`ros2 launch unitree_camera bottom_subscribers.launch.py`
 
 ### all_subscribers.launch.py
 Launches image subscribers for topics from all publishers.
@@ -139,7 +154,7 @@ General launch file for starting an `img_publisher` node specifically for one ca
 `ros2 launch unitree_camera img_publisher.launch.py`
 
 #### Arguments
-- `camera` - Which camera to publish images from. Options are ['head_front', 'head_bottom', 'body_left', 'body_right']
+- `camera` - Which camera to publish images from. Options are ['head_front', 'head_bottom', 'body_left', 'body_right', 'body_bottom']
 - `fps` - The frame rate of the camera (fps). Should not exceed the FPS set in the YAML file.
 - `enable_raw` - Enable publishing of raw frames.
 - `enable_rect` - Enable publishing of rectified frames.

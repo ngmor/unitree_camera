@@ -21,6 +21,30 @@ cd ..
 colcon build
 ```
 
+If setting a custom OpenCV installation directory to fix the OpenCV 4.1.1 dependency issue, you will need to pass custom CMake arguments. See [here](#dependency-on-opencv-411).
+
+### Dependency on OpenCV 4.1.1
+**!!!IMPORTANT!!!**
+
+The `UnitreecameraSDK` as of [this commit](https://github.com/unitreerobotics/UnitreecameraSDK/commit/ecd2058ba3f033af11c2d2a0306b44cc8d819332) (which my fork is based on) is dependent on a specific version of OpenCV, 4.1.1. If built with the newest versions, the SDK will get a nasty runtime segmentation fault when trying to open a camera.
+
+The Jetson Xaviers/Nanos that come with the Unitree Go1 Edu already have this version of OpenCV installed locally in `usr/local` (at least the one I work with does). Since this is the case, the dependency is met and (assuming you have ROS 2 installed on these devices) you should be able to build this package with just a simple `colcon build` (see [building the package](#building-the-package)).
+
+However, if you've upgraded the OS on these devices or installed a newer version of OpenCV, this dependency may not be met. I've built a workaround into these packages, described here.
+
+#### Build OpenCV 4.1.1 from source
+You'll have to build OpenCV 4.1.1 [from source](https://opencv.org/opencv-4-1-1/). Target some directory `${opencv_4_1_1_dir}` for local installation using a `CMAKE_INSTALL_PREFIX`.
+
+Upon successful installation, you should have the following structure in `${opencv_4_1_1_dir}`:
+- `${opencv_4_1_1_dir}/lib` contains the OpenCV shared object `.so` libraries.
+- `${opencv_4_1_1_dir}/lib/cmake/opencv4` contains the OpenCV `.cmake` files.
+
+#### Setting the custom directory
+When building this package, use the following `colcon` command to point towards `${opencv_4_1_1_dir}` as the OpenCV installation:
+```
+colcon build --cmake-args -DUNITREE_CAMERA_USE_CUSTOM_OPENCV_DIR=TRUE -DUNITREE_CAMERA_OPENCV_DIR=${opencv_4_1_1_dir}
+```
+
 ### Running Nodes
 To run all image publishers on the Go1's head Nano (192.168.123.13), run:
 

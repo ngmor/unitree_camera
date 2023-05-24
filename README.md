@@ -54,7 +54,7 @@ To run all image publishers on the Go1's body Nano (192.168.123.14) run:
 
 `ros2 launch unitree_camera body_publishers.launch.py`
 
-To run all the rear bottom camera on the Go1's body Xavier (192.168.123.15) run:
+To run all the rear bottom camera publishers on the Go1's body Xavier (192.168.123.15) run:
 
 `ros2 launch unitree_camera bottom_publishers.launch.py`
 
@@ -111,7 +111,7 @@ Arguments:
 - `${cam}.enable_rect` - Enable publishing of rectified frames from the `${cam}` camera.
 - `${cam}.enable_depth` - Enable publishing of depth frames from the `${cam}` camera.
 - `${cam}.enable_point_cloud` - Enable publishing point cloud data from the `${cam}` camera.
-- `${cam}.point_cloud_frame` - Frame ID for point cloud messages from the `${cam}` camera. These default to the correct frames in the [Unitree Go1's URDF] (https://github.com/katie-hughes/unitree_ros2/tree/main/go1_description/xacro).
+- `${cam}.point_cloud_frame` - Frame ID for point cloud messages from the `${cam}` camera. These default to the correct frames in the [Unitree Go1's URDF](https://github.com/katie-hughes/unitree_ros2/tree/main/go1_description/xacro).
 
 ### head_publishers.launch.py
 Launches image publishers for the Go1's head Nano (192.168.123.13).

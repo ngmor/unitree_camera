@@ -2,7 +2,7 @@
 bases = ['head_front']
 for base in bases:
   with open(base+'.yaml', 'w') as f1:
-    f1.write('/**\n')
+    f1.write('/**:\n')
     f1.write('\tros__parameters:\n')
     for side in ['left', 'right']:
       with open(base+'_'+side+'.yaml', 'r') as f2:

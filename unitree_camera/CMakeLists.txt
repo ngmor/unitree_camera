@@ -42,9 +42,16 @@ ament_target_dependencies(img_subscriber
 )
 target_link_libraries(img_subscriber ${OpenCV_LIBRARIES})
 
+add_executable(info_publisher src/info_publisher.cpp)
+target_link_libraries(info_publisher UnitreeCameraSDK::UnitreeCameraSDK)
+ament_target_dependencies(info_publisher
+  rclcpp std_msgs sensor_msgs cv_bridge pcl_conversions Boost image_transport
+)
+
 install(TARGETS
   img_publisher
   img_subscriber
+  info_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 

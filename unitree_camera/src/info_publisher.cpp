@@ -111,8 +111,8 @@ private:
     // camera_info_.r
     // camera_info_.p
 
-    // camera_info_left_.height = left_image_height;
-    // camera_info_left_.width = left_image_width;
+    camera_info_left_.height = left_image_height;
+    camera_info_left_.width = left_image_width;
     // camera_info_left_.distortion_model = left_distortion_model;
     // camera_info_left_.d = left_distortion_coefficients;
     // camera_info_left_.k = left_camera_matrix;

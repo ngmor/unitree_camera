@@ -3,7 +3,7 @@ bases = ['head_front']
 for base in bases:
   with open(base+'.yaml', 'w') as f1:
     f1.write('/**:\n')
-    f1.write('\tros__parameters:\n')
+    f1.write('  ros__parameters:\n')
     for side in ['left', 'right']:
       with open(base+'_'+side+'.yaml', 'r') as f2:
         for line in f2.readlines():
@@ -18,7 +18,7 @@ for base in bases:
               if lastchar == ']':
                 line += '\n'
             if '_' in id:
-              line = '\t\t'+side+'_'+line
+              line = '    '+side+'_'+line
             if lastchar == ',' or id == 'camera_matrix' or id == 'projection_matrix' or id == 'rectification_matrix' or id == 'distortion_coefficients':
               f1.write(line.strip('\n'))
             else:

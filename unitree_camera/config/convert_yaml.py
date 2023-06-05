@@ -3,9 +3,8 @@ base = 'head_front'
 
 
 with open(base+'.yaml', 'w') as f1:
-  for side in ['left']:
+  for side in ['left', 'right']:
     print(f"\n\nside={side}")
-    f1.write(side+'\n')
     with open(base+'_'+side+'.yaml', 'r') as f2:
       for line in f2.readlines():
         # print(line.strip('\n'))
@@ -19,6 +18,8 @@ with open(base+'.yaml', 'w') as f1:
             line = ' '+' '.join(line.split()[1:])
             if lastchar == ']':
               line += '\n'
+          if '_' in id:
+            line = side+'_'+line
           if lastchar == ',' or id == 'camera_matrix' or id == 'projection_matrix' or id == 'rectification_matrix' or id == 'distortion_coefficients':
             f1.write(line.strip('\n'))
           else:

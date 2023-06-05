@@ -27,31 +27,40 @@ from unitree_camera_launch_module import OrCondition, TernaryTextSubstitution, \
 def generate_launch_description():
     """Launch the image publisher node for a certain specified camera."""
     return LaunchDescription([
-        DeclareLaunchArgument(
-            name='camera',
-            default_value='head_front',
-            choices=['head_front', 'head_bottom', 'body_left', 'body_right', 'body_bottom'],
-            description='Which camera to publish images from.',
-        ),
-        DeclareLaunchArgument(
-            name='fps',
-            default_value='30',
-            description='The frame rate of the camera (fps). Should not exceed the FPS set in the YAML file.',
-        ),
-        DeclareLaunchArgument(
-            name='fps',
-            default_value='30',
-            description='The frame rate of the camera (fps). Should not exceed the FPS set in the YAML file.',
-        ),
         Node(
             package='unitree_camera',
             executable='info_publisher',
-            name='info',
+            name='info_head_front',
             output='screen',
             parameters=[PathJoinSubstitution([
                             FindPackageShare('unitree_camera'),
                             'config',
                             'head_front.yaml',
-                        ])]
+                        ]),
+                        {'stereo_name': 'head/front',}]
+        ),
+        Node(
+            package='unitree_camera',
+            executable='info_publisher',
+            name='info_body_left',
+            output='screen',
+            parameters=[PathJoinSubstitution([
+                            FindPackageShare('unitree_camera'),
+                            'config',
+                            'body_left.yaml',
+                        ]),
+                        {'stereo_name': 'body/left',}]
+        ),
+        Node(
+            package='unitree_camera',
+            executable='info_publisher',
+            name='info_body_right',
+            output='screen',
+            parameters=[PathJoinSubstitution([
+                            FindPackageShare('unitree_camera'),
+                            'config',
+                            'body_right.yaml',
+                        ]),
+                        {'stereo_name': 'body/right',}]
         ),
     ])

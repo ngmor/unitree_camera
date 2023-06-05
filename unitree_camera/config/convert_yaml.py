@@ -1,5 +1,5 @@
 
-bases = ['head_front']
+bases = ['head_front', 'body_left', 'body_right']
 for base in bases:
   with open(base+'.yaml', 'w') as f1:
     f1.write('/**:\n')

@@ -1,0 +1,18 @@
+/**:
+  ros__parameters:
+    left_image_width: 464
+    left_image_height: 400
+    left_camera_name: narrow_stereo/left
+    left_camera_matrix: [236.76639, 0. , 238.26215,           0.     , 238.57152, 209.8459 ,           0.     ,   0.     ,   1.     ]
+    left_distortion_model: plumb_bob
+    left_distortion_coefficients: [0.033386, -0.015254, 0.009124, 0.009057, 0.000000]
+    left_rectification_matrix: [ 0.99986969, -0.00191435, 0.01602936,          0.00195595,  0.99999476, -0.00257997,         -0.01602434,  0.00261099,  0.99986819]
+    left_projection_matrix: [251.10861, 0. , 237.62835, 0. ,           0.     , 251.10861, 214.25744,   0.     ,           0.     ,   0.     ,   1.     ,   0.     ]
+    right_image_width: 464
+    right_image_height: 400
+    right_camera_name: narrow_stereo/right
+    right_camera_matrix: [237.62991, 0. , 236.80905,           0.     , 239.55857, 207.98637,           0.     ,   0.     ,   1.     ]
+    right_distortion_model: plumb_bob
+    right_distortion_coefficients: [0.027304, -0.009025, 0.005464, 0.007659, 0.000000]
+    right_rectification_matrix: [ 0.99985307, -0.00946671, 0.01429063,          0.00942959,  0.99995199,  0.00266304,         -0.01431515, -0.00252789,  0.99989434]
+    right_projection_matrix: [251.10861, 0. , 237.62835, 6.32646,           0.     , 251.10861, 214.25744,   0.     ,           0.     ,   0.     ,   1.     ,   0.     ]

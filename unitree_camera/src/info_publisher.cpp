@@ -31,6 +31,10 @@ public:
     interval_ = 1.0 / static_cast<double>(fps_);
     interval_ms_ = static_cast<std::chrono::milliseconds>(static_cast<int>(interval_ * 1000.0));
 
+    param.description = "name for the stereo pair";
+    declare_parameter("stereo_name", "stereo", param);
+    stereo_name = get_parameter("stereo_name").get_parameter_value().get<std::string>();
+
     param.description = "Left camera frame width";
     declare_parameter("left_image_width", 0, param);
     left_image_width = get_parameter("left_image_width").get_parameter_value().get<int>();
@@ -97,8 +101,8 @@ public:
     right_projection_matrix = get_parameter("right_projection_matrix").get_parameter_value().get<std::vector<double>>();
 
     // Publisher
-    pub_info_left_ = create_publisher<sensor_msgs::msg::CameraInfo>("info_left", 10);
-    pub_info_right_ = create_publisher<sensor_msgs::msg::CameraInfo>("info_right", 10);
+    pub_info_left_ = create_publisher<sensor_msgs::msg::CameraInfo>(stereo_name+"/cam/image_rect/left/camera_info", 10);
+    pub_info_right_ = create_publisher<sensor_msgs::msg::CameraInfo>(stereo_name+"/cam/image_rect/right/camera_info", 10);
     // Timer
     timer_ = create_wall_timer(interval_ms_, std::bind(&InfoPublisher::timer_callback, this));
 
@@ -111,6 +115,8 @@ private:
   double interval_;
   std::chrono::milliseconds interval_ms_;
   int fps_;
+
+  std::string stereo_name;
 
   // stuff I added
   int left_image_width, left_image_height;

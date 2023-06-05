@@ -64,6 +64,38 @@ public:
     left_projection_matrix = get_parameter("left_projection_matrix").get_parameter_value().get<std::vector<double>>();
 
 
+    param.description = "right camera frame width";
+    declare_parameter("right_image_width", 0, param);
+    right_image_width = get_parameter("right_image_width").get_parameter_value().get<int>();
+
+    param.description = "right camera frame height";
+    declare_parameter("right_image_height", 0, param);
+    right_image_height = get_parameter("right_image_height").get_parameter_value().get<int>();
+
+    param.description = "right Camera name";
+    declare_parameter("right_camera_name", "", param);
+    right_camera_name = get_parameter("right_camera_name").get_parameter_value().get<std::string>();
+
+    param.description = "right Camera matrix";
+    declare_parameter("right_camera_matrix", std::vector<double>{}, param);
+    right_camera_matrix = get_parameter("right_camera_matrix").get_parameter_value().get<std::vector<double>>();
+
+    param.description = "right Camera distortion model";
+    declare_parameter("right_distortion_model", "", param);
+    right_distortion_model = get_parameter("right_distortion_model").get_parameter_value().get<std::string>();
+
+    param.description = "right Camera distortion coefficients";
+    declare_parameter("right_distortion_coefficients", std::vector<double>{}, param);
+    right_distortion_coefficients = get_parameter("right_distortion_coefficients").get_parameter_value().get<std::vector<double>>();
+
+    param.description = "right Camera rectification matrix";
+    declare_parameter("right_rectification_matrix", std::vector<double>{}, param);
+    right_rectification_matrix = get_parameter("right_rectification_matrix").get_parameter_value().get<std::vector<double>>();
+
+    param.description = "right Camera projection matrix matrix";
+    declare_parameter("right_projection_matrix", std::vector<double>{}, param);
+    right_projection_matrix = get_parameter("right_projection_matrix").get_parameter_value().get<std::vector<double>>();
+
     // Publisher
     pub_info_left_ = create_publisher<sensor_msgs::msg::CameraInfo>("info_left", 10);
     pub_info_right_ = create_publisher<sensor_msgs::msg::CameraInfo>("info_right", 10);
@@ -94,6 +126,8 @@ private:
   sensor_msgs::msg::CameraInfo camera_info_left_;
   sensor_msgs::msg::CameraInfo camera_info_right_;
 
+  bool fields_set = false;
+
   void timer_callback()
   {
 
@@ -111,13 +145,32 @@ private:
     // camera_info_.r
     // camera_info_.p
 
-    camera_info_left_.height = left_image_height;
-    camera_info_left_.width = left_image_width;
-    // camera_info_left_.distortion_model = left_distortion_model;
-    // camera_info_left_.d = left_distortion_coefficients;
-    // camera_info_left_.k = left_camera_matrix;
-    // camera_info_left_.r = left_rectification_matrix;
-    // camera_info_left_.p = left_projection_matrix;
+    if (!fields_set){
+      camera_info_left_.height = left_image_height;
+      camera_info_left_.width = left_image_width;
+      camera_info_left_.distortion_model = left_distortion_model;
+      camera_info_left_.d = left_distortion_coefficients;
+
+      camera_info_right_.height = right_image_height;
+      camera_info_right_.width = right_image_width;
+      camera_info_right_.distortion_model = right_distortion_model;
+      camera_info_right_.d = right_distortion_coefficients;
+      // these following ones have set sizes so I might need to fill in manually ;-;
+      // there is definitely more sophisticated way but I am in dumb brain mode rn
+      for (int i = 0; i < 9; i++){
+        camera_info_left_.k.at(i) = left_camera_matrix.at(i);
+        camera_info_left_.r.at(i) = left_rectification_matrix.at(i);
+
+        camera_info_right_.k.at(i) = right_camera_matrix.at(i);
+        camera_info_right_.r.at(i) = right_rectification_matrix.at(i);
+      }
+      for (int i = 0; i < 12; i++){
+        camera_info_left_.p.at(i) = left_projection_matrix.at(i);
+
+        camera_info_right_.p.at(i) = right_projection_matrix.at(i);
+      }
+      fields_set = true;
+    }
 
     pub_info_left_->publish(camera_info_left_);
     pub_info_right_->publish(camera_info_right_);
